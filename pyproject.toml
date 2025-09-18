@@ -1,0 +1,15 @@
+[project]
+name = "annotator-cli"
+version = "0.1.0"
+description = "Annotates source files with their relative paths for easier AI/debug context"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+# CLI entry point: after install, users can run `annotator`
+[project.scripts]
+annotator = "annotator.cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
