@@ -1,0 +1,22 @@
+{
+    "name": "nextjs",
+    "exclude_dirs": [
+        ".next",
+        "out",
+        "coverage",
+        ".swc",
+        ".turbo"
+    ],
+    "exclude_files": [
+        "next.config.js",
+        "next.config.mjs",
+        "postcss.config.js",
+        "tailwind.config.js",
+        "tsconfig.json",
+        "jsconfig.json",
+        "next-env.d.ts",
+        "package.json",
+        "components.json"
+    ],
+    "exclude_extensions": []
+}

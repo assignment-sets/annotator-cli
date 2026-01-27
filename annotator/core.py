@@ -1,89 +1,116 @@
 import os
-from .defaults import DEFAULT_COMMENT_STYLES, DEFAULT_EXCLUDE_DIRS
+from typing import Any, Dict, Optional, Set
 
 
-def get_full_extension(filename: str) -> str:
-    """Return everything after the first dot, e.g., 'unit.test.js' -> '.test.js'."""
-    if "." not in filename:
-        return ""
-    return filename[filename.index("."):]  # keeps the dot
+def get_extension(filename: str) -> str:
+    """Return the extension after the last dot."""
+    return os.path.splitext(filename)[1]
 
 
-def is_excluded_dir(filepath: str, root: str, exclude_dirs: set) -> bool:
-    """Check if file lives in an excluded directory (relative to root)."""
-    rel_path = os.path.relpath(filepath, root)
-    parts = rel_path.split(os.sep)
-    return any(part in exclude_dirs for part in parts)
+def is_too_deep(subdir: str, root: str, max_depth: int) -> bool:
+    """Check if the current directory exceeds recursion limits."""
+    rel_path: str = os.path.relpath(subdir, root)
+    if rel_path == ".":
+        return False
+    return len(rel_path.split(os.sep)) > max_depth
 
 
-def is_excluded_file(filename: str, exclude_files: set) -> bool:
-    """Check if filename matches exactly one of the excluded files."""
-    return filename in exclude_files
+def is_too_large(filepath: str, max_kb: int) -> bool:
+    """Check if file size exceeds the limit."""
+    try:
+        return (os.path.getsize(filepath) / 1024) > max_kb
+    except OSError:
+        return True
 
 
-def is_excluded_ext(filename: str, exclude_exts: set) -> bool:
-    """Check if full extension matches excluded extensions."""
-    ext = get_full_extension(filename)
-    return ext in exclude_exts
+def is_git_ignored(filepath: str, root: str, spec: Any) -> bool:
+    """Check if path matches gitignore rules."""
+    if not spec:
+        return False
+    rel_path: str = os.path.relpath(filepath, root)
+    return spec.match_file(rel_path)
 
 
-def annotate_file(root, filepath, comment_styles):
-    rel_path = os.path.relpath(filepath, root)
-    ext = get_full_extension(os.path.basename(filepath))
+def is_excluded_file(filename: str, config: Dict[str, Any]) -> bool:
+    """Check if filename or extension is in the exclusion lists."""
+    if filename in config.get("exclude_files", []):
+        return True
+    if get_extension(filename) in config.get("exclude_extensions", []):
+        return True
+    return False
 
-    prefix = comment_styles.get(ext)
-    if not prefix:
-        return
 
-    annotation = f"{prefix} {rel_path}\n"
+def get_prefix(filename: str, config: Dict[str, Any]) -> str:
+    """Determine comment style from config; fallback to '#'."""
+    styles: Dict[str, str] = config.get("comment_styles", {})
+    ext: str = get_extension(filename)
+    # Priority: Filename > Extension > Fallback
+    return styles.get(filename) or styles.get(ext) or "#"
+
+
+def apply_annotation(filepath: str, root: str, config: Dict[str, Any]) -> bool:
+    """Reads, checks for existing header, and writes the new annotation."""
+    rel_path: str = os.path.relpath(filepath, root)
+    prefix: str = get_prefix(os.path.basename(filepath), config)
+
+    annotation: str
     if prefix in ["<!--", "/*"]:
-        annotation = f"{prefix} {rel_path} {'-->' if prefix == '<!--' else '*/'}\n"
+        suffix: str = " -->" if prefix == "<!--" else " */"
+        annotation = f"{prefix} {rel_path}{suffix}\n"
+    else:
+        annotation = f"{prefix} {rel_path}\n"
 
     try:
         with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-            lines = f.readlines()
-    except Exception as e:
-        print(f"[WARN] Skipping {filepath}: {e}")
-        return
+            content: str = f.read()
 
-    if lines and rel_path in lines[0]:
-        return
+        if content.startswith(annotation.strip()):
+            return False
 
-    new_content = [annotation] + lines
-    try:
         with open(filepath, "w", encoding="utf-8") as f:
-            f.writelines(new_content)
-        print(f"[OK] Annotated {rel_path}")
+            f.write(annotation + content)
+        return True
     except Exception as e:
-        print(f"[ERROR] Failed to write {filepath}: {e}")
+        print(f"[ERROR] Failed {rel_path}: {e}")
+        return False
 
 
-def annotate_project(root=".", comment_styles=None,
-                     exclude_exts=None, exclude_dirs=None, exclude_files=None):
-    if comment_styles is None:
-        comment_styles = DEFAULT_COMMENT_STYLES
-    if exclude_exts is None:
-        exclude_exts = set()
-    if exclude_dirs is None:
-        exclude_dirs = set()
-    if exclude_files is None:
-        exclude_files = set()
+def annotate_project(
+    root: str, config: Dict[str, Any], spec: Optional[Any] = None
+) -> None:
+    """Traverse and annotate based on template/config settings."""
+    settings: Dict[str, Any] = config.get("settings", {})
+    max_depth: int = settings.get("max_recursive_depth", 10)
+    max_files: int = settings.get("max_num_of_files", 1000)
+    max_kb: int = settings.get("max_file_size_kb", 512)
+    ex_dirs: Set[str] = set(config.get("exclude_dirs", []))
 
-    effective_exclude_dirs = set(DEFAULT_EXCLUDE_DIRS) | set(exclude_dirs)
-
+    annotated_count: int = 0
     for subdir, dirs, files in os.walk(root):
-        # skip excluded dirs at traversal level
-        dirs[:] = [d for d in dirs if d not in effective_exclude_dirs]
+        # 1. Prune depth
+        if is_too_deep(subdir, root, max_depth):
+            dirs[:] = []
+            continue
+
+        # 2. Prune excluded directories (Efficient path exclusion)
+        dirs[:] = [d for d in dirs if d not in ex_dirs]
 
         for file in files:
-            filepath = os.path.join(subdir, file)
+            if annotated_count >= max_files:
+                print(f"[HALT] Reached file limit: {max_files}")
+                return
 
-            # precedence rules
-            if is_excluded_dir(filepath, root, effective_exclude_dirs):
+            filepath: str = os.path.join(subdir, file)
+
+            if is_git_ignored(filepath, root, spec):
                 continue
-            if is_excluded_file(file, exclude_files):
+            if is_excluded_file(file, config):
                 continue
-            if is_excluded_ext(file, exclude_exts):
+            if is_too_large(filepath, max_kb):
                 continue
 
-            annotate_file(root, filepath, comment_styles)
+            if apply_annotation(filepath, root, config):
+                annotated_count += 1
+                print(f"[OK] {os.path.relpath(filepath, root)}")
+
+    print(f"[DONE] Processed {annotated_count} files.")

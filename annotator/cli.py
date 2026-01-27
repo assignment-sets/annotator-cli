@@ -1,62 +1,86 @@
-import argparse
-import json
 import os
 import sys
+import json
+import argparse
+import pathspec
+from typing import Any, Dict, List, Optional
 from .core import annotate_project
-from .defaults import DEFAULT_COMMENT_STYLES, DEFAULT_EXCLUDE_DIRS
 
-CONFIG_FILE = ".annotator.json"
+CONFIG_NAME: str = ".annotator.json"
+TEMPLATES_BASE: str = os.path.join(os.path.dirname(__file__), "templates")
 
 
-def load_config(root):
-    config_path = os.path.join(root, CONFIG_FILE)
-    if not os.path.exists(config_path):
+def load_json(path: str) -> Dict[str, Any]:
+    """Safe JSON loader."""
+    if not os.path.exists(path):
         return {}
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except json.JSONDecodeError as e:
-        print(f"[ERROR] Invalid JSON in {CONFIG_FILE}: {e}", file=sys.stderr)
-        return {}
-    except Exception as e:
-        print(f"[ERROR] Could not read {CONFIG_FILE}: {e}", file=sys.stderr)
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except Exception:
         return {}
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Annotate files with relative paths.")
-    parser.add_argument("path", nargs="?", default=".", help="Project root (default: current dir)")
+def merge_configs(base: Dict[str, Any], overlay: Dict[str, Any]) -> Dict[str, Any]:
+    """Merges dictionaries and combines lists uniquely."""
+    result: Dict[str, Any] = base.copy()
+    for key, value in overlay.items():
+        if isinstance(value, dict) and key in result and isinstance(result[key], dict):
+            result[key] = {**result[key], **value}
+        elif (
+            isinstance(value, list) and key in result and isinstance(result[key], list)
+        ):
+            result[key] = list(set(result[key] + value))
+        else:
+            result[key] = value
+    return result
+
+
+def get_config(root: str) -> Dict[str, Any]:
+    """Loads default, then templates, then local config."""
+    user_config: Dict[str, Any] = load_json(os.path.join(root, CONFIG_NAME))
+
+    final_config: Dict[str, Any] = {}
+    # Default is always the starting point
+    template_names: List[str] = user_config.get("templates", ["default"])
+
+    for name in template_names:
+        t_path: str = os.path.join(TEMPLATES_BASE, f"{name}.json")
+        final_config = merge_configs(final_config, load_json(t_path))
+
+    # User's local .annotator.json overrides everything
+    return merge_configs(final_config, user_config)
+
+
+def get_spec(root: str) -> Optional[pathspec.PathSpec]:
+    """Parses .gitignore using pathspec."""
+    git_path: str = os.path.join(root, ".gitignore")
+    if not os.path.exists(git_path):
+        return None
+    try:
+        with open(git_path, "r") as f:
+            return pathspec.PathSpec.from_lines("gitwildmatch", f)
+    except Exception:
+        return None
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Recursive File Annotator")
+    parser.add_argument("path", nargs="?", default=".", help="Project root")
     args = parser.parse_args()
 
-    root = os.path.abspath(args.path)
-    if not os.path.exists(root):
-        print(f"[ERROR] Path does not exist: {root}", file=sys.stderr)
-        sys.exit(1)
+    root: str = os.path.abspath(args.path)
     if not os.path.isdir(root):
-        print(f"[ERROR] Path is not a directory: {root}", file=sys.stderr)
+        print(f"[ERROR] Directory not found: {root}")
         sys.exit(1)
 
-    config = load_config(root)
-    
-    valid_keys = {"comment_styles", "exclude_extensions", "exclude_dirs", "exclude_files"}
-    for key in config.keys():
-        if key not in valid_keys:
-            print(f"[WARN] Unknown key in {CONFIG_FILE}: '{key}'", file=sys.stderr) 
+    config: Dict[str, Any] = get_config(root)
+    spec: Optional[pathspec.PathSpec] = get_spec(root)
 
-    comment_styles = DEFAULT_COMMENT_STYLES.copy()
-    if "comment_styles" in config and isinstance(config["comment_styles"], dict):
-        comment_styles.update(config["comment_styles"])
+    print(f"[START] Root: {root}")
+    annotate_project(root, config, spec)
 
-    exclude_exts = set(config.get("exclude_extensions", []))
-    exclude_dirs = set(config.get("exclude_dirs", []))
-    exclude_files = set(config.get("exclude_files", []))
 
-    print(f"[INFO] Annotating project at {root}")
-    annotate_project(
-        root,
-        comment_styles,
-        exclude_exts,
-        exclude_dirs,
-        exclude_files
-    )
-    print("[INFO] Done.")
+if __name__ == "__main__":
+    main()
