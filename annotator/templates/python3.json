@@ -1,0 +1,39 @@
+{
+    "name": "python3",
+    "exclude_dirs": [
+        "__pycache__",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".ruff_cache",
+        ".tox",
+        ".nox",
+        ".venv",
+        "venv",
+        "env",
+        ".env",
+        "build",
+        "wheels",
+        "wheel",
+        "dist",
+        "*.egg-info"
+    ],
+    "exclude_files": [
+        "pyproject.toml",
+        "setup.py",
+        "setup.cfg",
+        "MANIFEST.in",
+        "requirements.txt",
+        "requirements-dev.txt",
+        "requirements-test.txt",
+        "Pipfile",
+        "Pipfile.lock",
+        "poetry.lock",
+        "uv.lock",
+        ".python-version"
+    ],
+    "exclude_extensions": [
+        ".pyc",
+        ".pyo",
+        ".pyd"
+    ]
+}

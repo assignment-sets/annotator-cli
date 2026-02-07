@@ -1,0 +1,19 @@
+{
+    "name": "prisma",
+    "exclude_dirs": [
+        "prisma/migrations",
+        "prisma/generated",
+        "prisma/client",
+        "src/generated/prisma",
+        "src/prisma/generated"
+    ],
+    "exclude_files": [
+        "schema.prisma",
+        "prisma.config.js",
+        "prisma.config.ts"
+    ],
+    "exclude_extensions": [
+        ".prisma",
+        "mjs"
+    ]
+}

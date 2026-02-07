@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "annotator-cli"
 version = "0.1.0"
@@ -7,11 +11,14 @@ requires-python = ">=3.12"
 dependencies = [
     "pathspec>=1.0.4",
 ]
+license = { text = "MIT" }
 
-# CLI entry point: after install, users can run `annotator`
 [project.scripts]
 annotator = "annotator.cli:main"
 
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+[tool.setuptools]
+packages = ["annotator"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+annotator = ["templates/*.json"]

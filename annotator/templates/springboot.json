@@ -1,0 +1,50 @@
+{
+  "name": "springboot",
+  "exclude_dirs": [
+    "target",
+    "build",
+    "bin",
+    "out",
+    ".gradle",
+    ".mvn",
+    ".settings",
+    ".idea",
+    "logs",
+    "help",
+    "src/generated",
+    "src/generated-sources",
+    "src/main/generated",
+    "src/main/resources/static",
+    "src/main/resources/public"
+  ],
+  "exclude_files": [
+    "mvnw",
+    "mvnw.cmd",
+    "gradlew",
+    "gradlew.bat",
+    "build.gradle.kts",
+    "build.gradle",
+    "settings.gradle",
+    "pom.xml",
+    ".classpath",
+    ".project",
+    "HELP.md",
+    "application.yml",
+    "application.yaml",
+    "application-dev.yml",
+    "application-prod.yml",
+    "application-test.yml",
+    "application-local.yml",
+    "application-staging.yml"
+  ],
+  "exclude_extensions": [
+    ".class",
+    ".jar",
+    ".war",
+    ".ear",
+    ".jks",
+    ".lst",
+    ".xml",
+    ".properties"
+  ]
+}

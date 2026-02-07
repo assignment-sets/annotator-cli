@@ -5,18 +5,44 @@
         "out",
         "coverage",
         ".swc",
-        ".turbo"
+        ".turbo",
+        "public",
+        "dist"
     ],
     "exclude_files": [
+        "pnpm-workspace.yaml",
+        "next.config.ts",
         "next.config.js",
-        "next.config.mjs",
         "postcss.config.js",
         "tailwind.config.js",
-        "tsconfig.json",
-        "jsconfig.json",
         "next-env.d.ts",
-        "package.json",
-        "components.json"
+        "yarn.lock",
+        "pnpm-lock.yaml",
+        "bun.lockb",
+        ".pnp.js",
+        ".nvmrc",
+        ".node-version",
+        ".yarnrc",
+        ".yarnrc.yml",
+        ".npmrc",
+        "vite.config.js",
+        "vite.config.ts",
+        "webpack.config.js",
+        "webpack.config.ts",
+        "rollup.config.js",
+        "rollup.config.ts",
+        "babel.config.js",
+        "eslint.config.js",
+        ".eslintrc",
+        ".prettierrc",
+        ".editorconfig",
+        "netlify.toml"
     ],
-    "exclude_extensions": []
+    "exclude_extensions": [
+        ".mjs",
+        "cjs",
+        "json",
+        "ejs",
+        ".next"
+    ]
 }
