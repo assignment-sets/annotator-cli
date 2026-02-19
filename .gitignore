@@ -5,7 +5,7 @@ build/
 dist/
 wheels/
 *.egg-info
-annotator.egg-info/
+*.egg-info/
 build/
 
 # Virtual environments
