@@ -1,6 +1,6 @@
 # Annotator CLI
 
-**Annotator** is a simple CLI utility that prepends relative file paths as comments to your project files as the first line.  
+**Annotator** is a simple CLI utility that prepends relative file paths as comments to your project files as the first line.
 It’s designed to make AI debugging easier by automatically marking file paths for better context and easier copy-pasting.
 
 ---
@@ -62,7 +62,7 @@ annotator --revert
 
 Annotator uses a layered configuration system:
 
-**Priority Chain:**  
+**Priority Chain:**
 `.gitignore` → `.annotator.jsonc` → `templates` (cumulative)
 
 ### Example `.annotator.jsonc`
@@ -96,10 +96,7 @@ Annotator uses a layered configuration system:
 }
 ```
 
-<details>
-<summary><strong>📋 Configuration Details</strong></summary>
-
-### Templates
+## 📋 Available Templates
 
 Annotator includes built-in templates for common frameworks:
 
@@ -110,7 +107,7 @@ Annotator includes built-in templates for common frameworks:
 - **`python3`** - Python virtual envs, caches, Jupyter notebooks
 - **`prisma`** - Prisma schema and migration exclusions
 
-Templates are applied cumulatively in order. See all templates at:  
+Templates are applied cumulatively in order. See all templates at:
 [github.com/assignment-sets/annotator-cli/tree/main/annotator/templates](https://github.com/assignment-sets/annotator-cli)
 
 ### Comment Styles
@@ -229,7 +226,7 @@ Repository: [github.com/assignment-sets/annotator-cli](https://github.com/assign
 
 ## ⚠️ Disclaimer
 
-> This software is provided **as-is**, without warranty of any kind.  
+> This software is provided **as-is**, without warranty of any kind.
 > Use at your own risk — the author is not responsible for data loss, crashes, or security issues.
 
 ---
