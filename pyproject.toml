@@ -22,3 +22,8 @@ include-package-data = true
 
 [tool.setuptools.package-data]
 annotator = ["templates/*.json"]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.5.1",
+]
