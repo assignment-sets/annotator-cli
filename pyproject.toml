@@ -29,6 +29,7 @@ dev = [
     "pre-commit>=4.5.1",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
+    "python-semantic-release>=10.5.3",
     "ruff>=0.15.2",
 ]
 
@@ -42,3 +43,9 @@ clean = """
 rm -rf .venv .ruff_cache .pytest_cache .coverage htmlcov dist build *.egg-info
 """
 lint = ["fix", "format"]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+branch = "master"
+build_command = "uv build"
+commit_message = "chore(release): {version} [skip ci]"
