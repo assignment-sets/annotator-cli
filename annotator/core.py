@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Optional, Set
 
 # Unique signature to identify our annotations for stateless revert
 SIGNATURE: str = "~annotator~"

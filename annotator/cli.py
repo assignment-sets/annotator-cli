@@ -13,31 +13,31 @@ TEMPLATES_BASE: str = os.path.join(os.path.dirname(__file__), "templates")
 # The exact template with comments for the --init command
 INIT_CONFIG_CONTENT = """{
   // List of templates to apply (keeping default as is always recommended)
-  // Add more templates in the list 
-  // existing templates can be seen here `https://github.com/assignment-sets/annotator-cli` 
+  // Add more templates in the list
+  // existing templates can be seen here `https://github.com/assignment-sets/annotator-cli`
   "templates": ["default"],
-  
+
   // Behavior settings
   "settings": {
     "max_recursive_depth": 10,      // How deep to recurse into folders
     "max_num_of_files": 1000,       // Maximum files to process
     "max_file_size_kb": 512         // Skip files larger than this
   },
-  
+
   // Override comment styles for specific extensions
   // Example: ".kt": "//", ".scala": "//"
   "comment_styles": {},
-  
+
   // Additional file extensions to exclude (beyond defaults)
   // Example: [".txt", ".log"]
-  // keeping existing items is prefered 
+  // keeping existing items is prefered
   "exclude_extensions": [".log", ".cache"],
-  
+
   // Additional directories to exclude (supports nested paths)
   // Example: ["temp", "cache", "src/generated/proto"]
   // keeping existing items is prefered
   "exclude_dirs": ["node_modules", ".venv", "__pycache__", "dist", "build", "target", "bin", ".git"],
-  
+
   // Additional specific file `names` to exclude [no support for nested paths]
   // Example: [".env.local", "config.json"]
   // keeping existing items is prefered
@@ -204,7 +204,7 @@ def get_config(root: str) -> Dict[str, Any]:
     final_config = merge_configs(final_config, user_overrides)
 
     # Final summary
-    print(f"\n[CONFIG SUMMARY]")
+    print("\n[CONFIG SUMMARY]")
     print(f"  Comment styles: {len(final_config.get('comment_styles', {}))}")
     print(f"  Excluded extensions: {len(final_config.get('exclude_extensions', []))}")
     print(f"  Excluded files: {len(final_config.get('exclude_files', []))}")
@@ -254,11 +254,11 @@ def run_init(root: str) -> None:
         try:
             with open(gitignore_path, "w", encoding="utf-8") as f:
                 f.write("# Annotator exclusions\nnode_modules/\n.DS_Store\n")
-            print(f"[INIT] Created .gitignore")
+            print("[INIT] Created .gitignore")
         except Exception as e:
             print(f"[ERROR] Failed to create .gitignore: {e}")
     else:
-        print(f"[SKIP] .gitignore already exists.")
+        print("[SKIP] .gitignore already exists.")
 
 
 def main() -> None:
