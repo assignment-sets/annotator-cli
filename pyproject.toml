@@ -38,4 +38,7 @@ test-cov = "pytest --cov=annotator tests/ --cov-report=term-missing"
 check = "ruff check ."
 fix = "ruff check --fix ."
 format = "ruff format ."
+clean = """
+rm -rf .venv .ruff_cache .pytest_cache .coverage htmlcov dist build *.egg-info
+"""
 lint = ["fix", "format"]
